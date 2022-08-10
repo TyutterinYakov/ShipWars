@@ -5,11 +5,13 @@ public class Ship implements Data {
     private int size;
     private Location location;
     private long playerId;
+    private int health;
 
     public Ship(int size, Location location, long userId) {
         this.size = size;
         this.location = location;
         this.playerId = userId;
+        this.health = size;
     }
 
     @Override
@@ -44,5 +46,13 @@ public class Ship implements Data {
 
     public void setPlayerId(long playerId) {
         this.playerId = playerId;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
     }
 }
