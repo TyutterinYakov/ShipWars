@@ -27,14 +27,19 @@ public record GameService(PlayerService playerService,
         arrangeShips(player);
     }
 
+
     public void startGame() {
         if (playerService.getAll().size() != COUNT_PLAYERS) {
             System.out.println("Не все игроки созданы, для начала создайте их");
+            return;
         }
         Player player1 = playerService.getAll().get(0);
         Player player2 = playerService.getAll().get(1);
         while (true) {
-            if(gunPlayer(player1, player2) || gunPlayer(player2, player1)) {
+            if(gunPlayer(player1, player2)) {
+                break;
+            }
+            if(gunPlayer(player2, player1)) {
                 break;
             }
         }
@@ -42,75 +47,79 @@ public record GameService(PlayerService playerService,
 
 
     private boolean gunPlayer(Player player1, Player player2) {
-        System.out.println("Стреляет игрок: " + player1.getName());
-        PlayingField playingField = gameStorage.getPlayingFieldByUserId(player2.getId());
-        printGameFieldPlay(playingField);
-        String cell = scanner.nextLine().trim();
-        if (cell.length() < 2) {
-            System.out.println("Некорректный формат ввода");
-            return false;
-        }
-        int verticalPosition;
-        LetterField letterField;
-        CellField cellField;
-        try {
-            letterField = LetterField.valueOf(String.valueOf(cell.charAt(0)));
-            verticalPosition = Integer.parseInt(cell.substring(1))-1;
-            if (verticalPosition > 9 || //TODO
-                    verticalPosition < 0) {
-                throw new IllegalArgumentException();
+        while (true) {
+            System.out.println("Стреляет игрок: " + player1.getName());
+            PlayingField playingField = gameStorage.getPlayingFieldByUserId(player2.getId());
+            printGameFieldPlay(playingField);
+            String cell = scanner.nextLine().trim();
+            if (cell.length() < 2) {
+                System.out.println("Некорректный формат ввода");
+                continue;
             }
-            cellField = playingField.getFields().get(letterField).get(verticalPosition);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Некорректный формат ввода");
-            return false;
-        }
-        if (cellField.isShot()) {
-            System.out.println("Вы уже стреляли в эту цель. Выстрел не имел смысла");
-            return false;
-        }
-        Ship ship = cellField.getShip();
-        if (ship != null) {
-            ship.setHealth(ship.getHealth() - 1);
-            if (ship.getHealth() <= 0) {
-                playingField.setCountShip(playingField.getCountShip() - 1);
-                for (CellField shipCell : ship.getCells()) {
-                    shipCell.setShot(true);
+            int verticalPosition;
+            LetterField letterField;
+            CellField cellField;
+            try {
+                letterField = LetterField.valueOf(String.valueOf(cell.charAt(0)));
+                verticalPosition = Integer.parseInt(cell.substring(1)) - 1;
+                if (verticalPosition > 9 || //TODO
+                        verticalPosition < 0) {
+                    throw new IllegalArgumentException();
                 }
-                System.err.println("Убил");
-                if (playingField.getCountShip() <= 0) {
-                    System.err.println("С победой, игрок!");
-                    return true;
-                }
+                cellField = playingField.getFields().get(letterField).get(verticalPosition);
+            } catch (IllegalArgumentException e) {
+                System.out.println("Некорректный формат ввода");
+                continue;
             }
-            System.err.println("Попал!");
+            if (cellField.isShot()) {
+                System.out.println("Вы уже стреляли в эту цель. Выстрел не имеел смысла");
+                return false;
+            }
+            Ship ship = cellField.getShip();
+            if (ship != null) {
+                ship.setHealth(ship.getHealth() - 1);
+                if (ship.getHealth() <= 0) {
+                    playingField.setCountShip(playingField.getCountShip() - 1);
+                    for (CellField shipCell : ship.getCells()) {
+                        shipCell.setShot(true);
+                    }
+                    System.err.println("Убил");
+                    if (playingField.getCountShip() <= 0) {
+                        System.err.println("С победой, игрок! " + player1.getName());
+                        printGameFieldPlay(playingField);
+                        playerService.deleteAll();
+                        shipService.deleteAll();
+                        return true;
+                    }
+                }
+                System.err.println("Попал!");
+                cellField.setShot(true);
+                continue;
+            } else {
+                System.err.println("Мимо!");
+            }
             cellField.setShot(true);
-            gunPlayer(player1, player2);
-        } else {
-            System.err.println("Мимо!");
+            printGameFieldPlay(playingField);
+            return false;
         }
-        cellField.setShot(true);
-        printGameFieldPlay(playingField);
-        return false;
     }
 
 
     private void arrangeShips(Player player) { //Заполнение игрового поля
-//        int countShips = SHIP_FOUR_CELL + SHIP_THREE_CELL + SHIP_TWO_CELL + SHIP_ONE_CELL;
-        int countShips = 1; //TODO количество кораблей
+        int countShips = SHIP_FOUR_CELL + SHIP_THREE_CELL + SHIP_TWO_CELL + SHIP_ONE_CELL;
         PlayingField playingField = new PlayingField(player.getId(), countShips);
         gameStorage.createPlayingField(playingField);
         installationShip(SHIP_FOUR_CELL, playingField, player);
-//        for (int i = 0; i < 2; i++) {
-//            installationShip(SHIP_THREE_CELL, playingField, player);
-//        }
-//        for (int i = 0; i < 3; i++) {
-//            installationShip(SHIP_TWO_CELL, playingField, player);
-//        }
-//        for (int i = 0; i < 4; i++) {
-//            installationShip(SHIP_ONE_CELL, playingField, player);
-//        }
-//        printGameFieldCreate(playingField.getId());
+        for (int i = 0; i < 2; i++) {
+            installationShip(SHIP_THREE_CELL, playingField, player);
+        }
+        for (int i = 0; i < 3; i++) {
+            installationShip(SHIP_TWO_CELL, playingField, player);
+        }
+        for (int i = 0; i < 4; i++) {
+            installationShip(SHIP_ONE_CELL, playingField, player);
+        }
+        printGameFieldCreate(playingField.getId());
 
         for(int i = 0; i < 20; i++) { //Пропуск, чтобы не видеть, что вводил прошлый игрок
             System.out.println();
@@ -133,9 +142,9 @@ public record GameService(PlayerService playerService,
             Location location;
             try {
                 letterField = LetterField.valueOf(String.valueOf(cell.charAt(0)));
-                verticalPosition = Integer.parseInt(cell.substring(1));
+                verticalPosition = Integer.parseInt(cell.substring(1))-1;
                 if (verticalPosition > playingField.getSIZE_VERTICAL() ||
-                        verticalPosition < 1) {
+                        verticalPosition < 0) {
                     throw new IllegalArgumentException();
                 }
             } catch (IllegalArgumentException e) {
@@ -169,7 +178,7 @@ public record GameService(PlayerService playerService,
             }
 
             Ship ship = new Ship(cellShip, location, player.getId());
-            if (!checkCollision(ship, verticalPosition - 1, playingField, letterField)) {
+            if (!checkCollision(ship, verticalPosition, playingField, letterField)) {
                 System.out.println("Корабль пересекается с соседним");
                 continue;
             }
@@ -298,11 +307,11 @@ public record GameService(PlayerService playerService,
             for (LetterField letterField : LetterField.values()) {
                 CellField cellField = playingField.getFields().get(letterField).get(i);
                 if (cellField.getShip() == null) {
-                    if (cellField.isAvailable()) {
+//                    if (cellField.isAvailable()) { //Подсветка занятых полей вокруг кораблей
                         System.out.print("   ");
-                    } else {
-                        System.out.print(" * ");
-                    }
+//                    } else {
+//                        System.out.print(" * ");
+//                    }
 
                 } else {
                     System.out.print(" # ");
@@ -327,11 +336,6 @@ public record GameService(PlayerService playerService,
                     Ship ship = cellField.getShip();
                     if (ship != null) {
                         System.out.print(" + ");
-//                        if (ship.getHealth() <= 0) {
-//                            for (CellField cell : ship.getCells()) {
-//                                cell.setShot(true);
-//                            }
-//                        }
                     } else {
                         System.out.print(" - ");
                     }

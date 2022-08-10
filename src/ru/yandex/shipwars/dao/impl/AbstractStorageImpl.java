@@ -35,6 +35,7 @@ public class AbstractStorageImpl<T extends Data> implements AbstractStorage<T> {
 
     @Override
     public void deleteAll() {
+        generatorId = 0L;
         storage.clear();
     }
 }

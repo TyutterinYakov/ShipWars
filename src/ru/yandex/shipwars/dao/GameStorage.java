@@ -6,4 +6,5 @@ public interface GameStorage {
     void createPlayingField(PlayingField playingField);
     PlayingField getPlayingFiled(long id);
     PlayingField getPlayingFieldByUserId(long id);
+    void deleteAll();
 }

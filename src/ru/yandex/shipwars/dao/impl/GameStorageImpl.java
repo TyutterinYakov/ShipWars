@@ -26,4 +26,11 @@ public class GameStorageImpl implements GameStorage {
     public PlayingField getPlayingFieldByUserId(long id) {
         return fields.values().stream().filter((f) -> f.getUserId() == id).findFirst().get(); //TODO
     }
+
+    @Override
+    public void deleteAll() {
+        generatorId = 1L;
+        fields.clear();
+    }
+
 }
