@@ -1,11 +1,15 @@
 package ru.yandex.shipwars.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Ship implements Data {
     private long id;
     private int size;
     private Location location;
     private long playerId;
     private int health;
+    private final List<CellField> cells = new ArrayList<>();
 
     public Ship(int size, Location location, long userId) {
         this.size = size;
@@ -50,6 +54,10 @@ public class Ship implements Data {
 
     public int getHealth() {
         return health;
+    }
+
+    public List<CellField> getCells() {
+        return cells;
     }
 
     public void setHealth(int health) {

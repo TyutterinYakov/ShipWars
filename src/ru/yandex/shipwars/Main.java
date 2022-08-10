@@ -47,7 +47,7 @@ public class Main {
     private static void printMenu() {
         System.out.println(
                 "Меню: \n" +
-                        "1 - настройки игры" +
+                        "1 - настройки игры\n" +
                         "2 - создать нового игрока и заполнить игровое поле\n" +
                         "3 - начать игру\n" +
                         "4 - выйти "

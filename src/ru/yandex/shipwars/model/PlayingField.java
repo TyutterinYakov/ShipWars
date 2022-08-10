@@ -17,7 +17,11 @@ public class PlayingField {
         this.userId = userId;
         this.countShip = countShip;
         for (LetterField letterField : LetterField.values()) {
-            fields.put(letterField, new ArrayList<>(SIZE_VERTICAL));
+            List<CellField> cells = new ArrayList<>(SIZE_VERTICAL);
+            fields.put(letterField, cells);
+            for(int i = 0; i < SIZE_VERTICAL; i++) {
+                cells.add(new CellField(letterField.ordinal(), i));
+            }
         }
     }
 

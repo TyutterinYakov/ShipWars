@@ -21,4 +21,9 @@ public class GameStorageImpl implements GameStorage {
     public PlayingField getPlayingFiled(long id) {
         return fields.get(id);
     }
+
+    @Override
+    public PlayingField getPlayingFieldByUserId(long id) {
+        return fields.values().stream().filter((f) -> f.getUserId() == id).findFirst().get(); //TODO
+    }
 }
